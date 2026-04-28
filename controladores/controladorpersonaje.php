@@ -116,6 +116,100 @@
             }        
         }
 
+        public function modificar() {
+            $body = file_get_contents('php://input');
+            $array_personaje = json_decode($body, true);
+            print_r($array_personaje);
+
+            // ID
+            if(!isset($array_personaje["id"])){
+                header("HTTP/2 400 Bad request");
+                echo "Falta el parámetro id";    
+                die();
+            }
+            $id = $array_personaje["id"];
+            // Nombre
+            if(!isset($array_personaje["nombre"])){
+                header("HTTP/2 400 Bad request");
+                echo "Falta el parámetro nombre";    
+                die();
+            }
+            $nombre = $array_personaje["nombre"];
+
+            if (strlen(htmlspecialchars($nombre)) < 3) {
+                header("HTTP/2 400 Bad request");
+                echo 'Parámetro nombre longitud insuficiente';
+                die();
+            }
+
+            // Nivel
+            if(!isset($array_personaje["nivel"])){
+                header("HTTP/2 400 Bad request");
+                echo "Falta el parámetro nivel";    
+                die();
+            }
+            
+            $nivel = $array_personaje["nivel"];
+
+            // Es un número
+            if (!is_numeric(htmlspecialchars($nivel))) {
+                header("HTTP/2 400 Bad request");
+                echo 'Parámetro nivel debe ser un número';
+                die();
+            }
+
+            //Puntos de vida
+            if(!isset($array_personaje["puntos_vida"])){
+                header("HTTP/2 400 Bad request");
+                echo "Falta el parámetro nivel";    
+                die();
+            }
+            $puntos_vida = $array_personaje["puntos_vida"];
+
+            if (!is_numeric(htmlspecialchars($puntos_vida))) {
+                header("HTTP/2 400 Bad request");
+                echo 'Parámetro puntos de vida debe ser numérico';
+                die();
+            }
+            
+            $personaje = new Personaje($nombre, $nivel, $puntos_vida);
+            $bd = null;
+            try{
+                // Iniciamos transacción
+                $bd = new BD();
+                $bd->getConexion()->beginTransaction();
+                $personaje->modificar();
+                //Insertamos humanos
+                if(isset($array_personaje['reino'])){
+                    $array_humano = $this->validarHumano($array_personaje);
+                    $humano = new Humano($id, $id, $array_humano["reino"], $array_humano["profesion"]);
+                    $humano->modificar();
+                }
+
+                // inserto elfo
+                if(isset($array_personaje['tipo'])){
+                    $array_elfo = $this->validarElfo($array_personaje);
+                    $elfo = new Elfo($id, $id, $array_elfo["tipo"], $array_elfo["habilidad_especial"]);
+                    $elfo->modificar();  
+                }
+                // inserto orco
+                if(isset($array_personaje['clan'])){
+                    $array_orco = $this->validarOrco($array_personaje);
+                    $orco = new Orco($id, $id, $array_orco["clan"], $array_orco["fuerza_extra"]);
+                    $orco->modificar();  
+                }
+
+                
+                $bd->getConexion()->commit();
+                
+            }
+            catch(Throwable $e){
+                header("HTTP/2 500 Internal Server Error");
+                echo "Error en controlador_personaje en insertar";
+                $bd->getConexion()->rollBack();
+            }
+        }
+
         public function validarHumano($array_personaje) {
             
             if (isset($array_personaje['reino']) && isset($array_personaje['profesion'])) {

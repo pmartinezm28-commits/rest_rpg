@@ -9,11 +9,8 @@
         switch($metodo){        
             case 'GET':       
                 $personajes = $controlador->listar();      
-                // echo "personajes: " ;
                 print_r($personajes); 
                 $json = json_encode($personajes);
-                /* $array  = ["nombre" => "pablo", "edad"=>25];
-                $json = json_encode($array); */
                 header('Content-Type: application/json; charset=utf-8');      
                 echo $json;
                  
@@ -31,8 +28,15 @@
                 $controlador->borrar();    
                 header('HTTP Response code 201');
                 header('Content-Type: text/html; charset=utf-8');
-                /*Modificar*/ echo "Borrado correcto";
-                break;        
+                echo "Borrado realizado";
+                break;  
+
+            case 'PUT':
+                $controlador->modificar();
+                header('HTTP Response code 201');
+                header('Content-Type: text/html; charset=utf-8');
+                echo "Modificación realizada";
+                break;          
 
             default:
                 http_response_code(501);

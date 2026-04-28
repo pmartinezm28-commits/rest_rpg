@@ -60,9 +60,9 @@ class Personaje implements JsonSerializable{
             return $id;
         }
         catch(Throwable $e){
-                /* header("HTTP/2 500 Server Error");
-                echo "Error en controlador personaje en listar ". $e . " <br>"; */
-            throw  new  Exception("Error en personaje en insertar ". $e . " <br>");
+            http_response_code(500);
+            echo "HTTP/2 500 Internal Server Error " . $e->getMessage() . " ";
+            die();
         }
     }
 
@@ -102,10 +102,13 @@ class Personaje implements JsonSerializable{
             return $personajes; 
         }
         catch(Throwable $e){
-            echo "hola";
             http_response_code(500);
             echo "HTTP/2 500 Internal Server Error " . $e->getMessage() . " ";
             die();
         }
+    }
+    
+    public function modificar(){
+
     }
 }
