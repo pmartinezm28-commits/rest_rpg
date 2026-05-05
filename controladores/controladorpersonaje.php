@@ -116,10 +116,12 @@
             }        
         }
 
+        /**
+         * Realiza una modificación de un personaje
+         */
         public function modificar() {
             $body = file_get_contents('php://input');
             $array_personaje = json_decode($body, true);
-            print_r($array_personaje);
 
             // ID
             if(!isset($array_personaje["id"])){
@@ -164,6 +166,7 @@
                 echo "Falta el parámetro nivel";    
                 die();
             }
+
             $puntos_vida = $array_personaje["puntos_vida"];
 
             if (!is_numeric(htmlspecialchars($puntos_vida))) {
@@ -171,42 +174,39 @@
                 echo 'Parámetro puntos de vida debe ser numérico';
                 die();
             }
-            
-            $personaje = new Personaje($nombre, $nivel, $puntos_vida);
-            $bd = null;
             try{
                 // Iniciamos transacción
                 $bd = new BD();
-                $bd->getConexion()->beginTransaction();
-                $personaje->modificar();
-                //Insertamos humanos
-                if(isset($array_personaje['reino'])){
-                    $array_humano = $this->validarHumano($array_personaje);
-                    $humano = new Humano($id, $id, $array_humano["reino"], $array_humano["profesion"]);
-                    $humano->modificar();
-                }
+                $tuplas = Personaje::modificar($id, $nombre, $nivel, $puntos_vida);
+                if($tuplas > 0){
+                    //Insertamos humanos
+                    if(isset($array_personaje['reino'])){
+                        $array_humano = $this->validarHumano($array_personaje);
+                        Humano::modificar($array_personaje['id'], $array_personaje['reino'], $array_personaje['profesion']);
+                    }
 
-                // inserto elfo
-                if(isset($array_personaje['tipo'])){
-                    $array_elfo = $this->validarElfo($array_personaje);
-                    $elfo = new Elfo($id, $id, $array_elfo["tipo"], $array_elfo["habilidad_especial"]);
-                    $elfo->modificar();  
-                }
-                // inserto orco
-                if(isset($array_personaje['clan'])){
-                    $array_orco = $this->validarOrco($array_personaje);
-                    $orco = new Orco($id, $id, $array_orco["clan"], $array_orco["fuerza_extra"]);
-                    $orco->modificar();  
-                }
+                    // inserto elfo
+                    if(isset($array_personaje['tipo'])){
+                        $array_elfo = $this->validarElfo($array_personaje);
+                        Elfo::modificar($array_personaje['id'], $array_personaje['tipo'], $array_personaje['habilidad_especial']);  
+                    }
 
-                
-                $bd->getConexion()->commit();
-                
+                    // inserto orco
+                    if(isset($array_personaje['clan'])){
+                        $array_orco = $this->validarOrco($array_personaje);
+                        Orco::modificar($array_personaje['id'], $array_personaje['clan'],$array_personaje['fuerza_extra']);  
+                    }     
+                }
+                else{
+                    echo "No se encuentra personaje con dicho id";
+                    die();
+                }
+           
             }
             catch(Throwable $e){
                 header("HTTP/2 500 Internal Server Error");
                 echo "Error en controlador_personaje en insertar";
-                $bd->getConexion()->rollBack();
+                die();
             }
         }
 

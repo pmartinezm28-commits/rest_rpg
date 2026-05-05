@@ -29,6 +29,7 @@
             return $this->conexion->lastInsertId();
         }
 
+        // Realiza una busqueda en la bd
         public function seleccionar($sql, $parametros){
         
             $sentencia = $this->conexion->prepare($sql);
@@ -40,11 +41,25 @@
             return $tupla;
         }
 
+        // Realiza un borrado en la bd
         public function borrar($sql, $parametros){
             
             $sentencia = $this->conexion->prepare($sql);
 
             $sentencia -> execute($parametros);
+
+        }
+
+        // Realiza una modificación en la bd
+        public function modificar($sql, $parametros){
+
+            $sentencia = $this->conexion->prepare($sql);
+
+            $sentencia -> execute($parametros);
+
+            $tuplas = $sentencia->rowCount();
+
+            return $tuplas;
 
         }
 

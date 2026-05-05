@@ -15,7 +15,7 @@
             $this->bd = new BD;
         }
 
-        function insertar(){
+        public function insertar(){
             try{
                 $sql = "INSERT INTO humano (id_personaje, id_humano, reino, profesion) VALUES (?,?,?,?)";
                 $parametros = [$this->id_humano, $this->id_personaje, $this->reino, $this->profesion];
@@ -25,6 +25,27 @@
             catch(Throwable $e){
                 header("HTTP/2 500 Server Error");
                 echo "Error en humano en insertar ". $e . " <br>";
+            }
+        }
+
+        public static function modificar($id, $reino, $profesion){
+            $bd = new BD();
+            try{
+                $bd->getConexion()->beginTransaction();
+                
+                $sql = "UPDATE humano
+                        SET reino = ?, profesion = ?
+                        WHERE id_personaje = $id";
+
+                $parametros = [$reino, $profesion];
+                $bd->modificar($sql, $parametros); 
+                
+                $bd->getConexion()->commit();       
+            } catch(Throwable $e){
+                header("HTTP/2 500 Server Error");
+                echo "Error en humano en insertar ". $e . " <br>";
+                $bd->getConexion()->rollBack();
+                die();
             }
         }
     }

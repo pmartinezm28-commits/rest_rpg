@@ -108,7 +108,25 @@ class Personaje implements JsonSerializable{
         }
     }
     
-    public function modificar(){
+    public static function modificar($id, $nombre, $nivel, $puntos_vida){
+        $bd = new BD();
+        try {
+            $bd->getConexion()->beginTransaction();
+            
+            $sql = "UPDATE personaje 
+                SET nombre = ?, nivel = ?, puntos_vida = ?
+                WHERE id = $id";
+            $parametros = [$nombre, $nivel, $puntos_vida];
+            $tuplas = $bd->modificar($sql, $parametros); 
 
+            $bd->getConexion()->commit();
+            return $tuplas;
+        } 
+        catch(Throwable $e){
+            http_response_code(500);
+            echo "HTTP/2 500 Internal Server Error " . $e->getMessage() . " ";
+            $bd->getConexion()->rollBack();
+            die();
+        }        
     }
 }
